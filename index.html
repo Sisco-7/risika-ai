@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risika AI | Sisco Ask Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --accent: #0f172a;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --msg-user: #f1f5f9;
+            --artifact-bg: #f8fafc;
+            --code-bg: #1a1a1a;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        .dark-mode {
+            --bg-primary: #020203;
+            --bg-secondary: #0a0a0c;
+            --accent: #ffffff;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --msg-user: #0f1115;
+            --artifact-bg: #0f1115;
+            --code-bg: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            transition: background-color 0.3s ease;
+            overflow: hidden;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .app-container { 
+            display: flex; 
+            height: 100vh; 
+            width: 100vw; 
+            overflow: hidden;
+        }
+
+        #sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            transition: transform 0.3s ease;
+            z-index: 50;
+            overflow: hidden;
+        }
+
+        .main-content { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            min-width: 0; 
+            background-color: var(--bg-primary);
+            overflow: hidden;
+        }
+
+        @media (max-width: 1024px) {
+            #sidebar { 
+                position: fixed; 
+                left: 0; 
+                top: 0; 
+                bottom: 0; 
+                transform: translateX(-100%); 
+                width: 100%;
+                max-width: 320px;
+            }
+            #sidebar.open { transform: translateX(0); }
+            .main-content { width: 100vw; }
+        }
+
+        @media (max-width: 640px) {
+            #sidebar {
+                max-width: 280px;
+            }
+        }
+
+        .markdown-content { 
+            font-size: 0.95rem; 
+            line-height: 1.7; 
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+        
+        .markdown-content p { margin-bottom: 1rem; }
+        .markdown-content strong { color: var(--accent); font-weight: 700; }
+        .markdown-content em { font-style: italic; }
+        .markdown-content ul, .markdown-content ol { 
+            margin-left: 1.5rem; 
+            margin-bottom: 1rem; 
+        }
+        .markdown-content li { margin-bottom: 0.5rem; }
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 { 
+            font-weight: 700; 
+            margin-top: 1.5rem; 
+            margin-bottom: 1rem; 
+            color: var(--accent); 
+        }
+        .markdown-content h1 { font-size: 1.5rem; }
+        .markdown-content h2 { font-size: 1.25rem; }
+        .markdown-content h3 { font-size: 1.1rem; }
+        .markdown-content blockquote {
+            border-left: 4px solid var(--border);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        
+        /* FIXED: Artifact Styling with Responsive Design */
+        .artifact-container {
+            background: var(--artifact-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+            position: relative;
+            max-width: 100%;
+            overflow: hidden;
+            width: 100%;
+        }
+        
+        .artifact-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .artifact-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .artifact-content {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.8;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .artifact-content pre {
+            background: var(--code-bg) !important;
+            border-radius: 8px;
+            padding: 1rem !important;
+            margin: 0.5rem 0;
+            overflow-x: auto !important;
+            max-width: 100%;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+        
+        .artifact-content pre code {
+            background: transparent !important;
+            padding: 0 !important;
+            font-size: 0.85rem;
+            color: #f8f8f2;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            word-break: break-word;
+            display: block;
+            max-width: 100%;
+        }
+        
+        /* FIXED: Copy button always visible and responsive */
+        .copy-btn {
+            position: relative;
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-radius: 6px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.7rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all 0.2s ease;
+            opacity: 1 !important;
+            visibility: visible !important;
+            flex-shrink: 0;
+        }
+        
+        .copy-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .copy-btn.success {
+            background-color: var(--success) !important;
+        }
+        
+        /* Message styling */
+        .msg-wrapper { 
+            display: flex; 
+            gap: 1rem; 
+            max-width: min(100%, 850px); 
+            margin: 0 auto; 
+            width: 100%; 
+            padding: 0 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .msg-wrapper {
+                gap: 0.75rem;
+                padding: 0;
+            }
+        }
+
+        .avatar {
+            width: 2.5rem; 
+            height: 2.5rem; 
+            border-radius: 12px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            flex-shrink: 0; 
+            font-weight: 800; 
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 640px) {
+            .avatar {
+                width: 2rem;
+                height: 2rem;
+                font-size: 0.7rem;
+            }
+        }
+
+        .typing-dot {
+            width: 6px; 
+            height: 6px; 
+            background: var(--text-muted);
+            border-radius: 50%; 
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce { 
+            0%, 80%, 100% { transform: scale(0); } 
+            40% { transform: scale(1); } 
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { 
+            background: var(--border); 
+            border-radius: 10px; 
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        /* Progress bar */
+        .progress-bar {
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent) 0%, var(--success) 50%, var(--accent) 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            animation: progressShimmer 2s infinite linear;
+            background-size: 200% 100%;
+        }
+        
+        @keyframes progressShimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        /* Status indicator */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-online { background-color: var(--success); }
+        .status-warning { background-color: var(--warning); }
+        .status-error { background-color: var(--error); }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip-text {
+            visibility: hidden;
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            text-align: center;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Image preview */
+        .image-preview {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin: 0.5rem 0;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        /* Voice recording indicator */
+        .voice-recording {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border-radius: 12px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        /* Quick actions */
+        .quick-action-btn {
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+        
+        .quick-action-btn:hover {
+            background: var(--accent);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        /* Settings panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background: var(--bg-primary);
+            box-shadow: -4px 0 24px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .settings-panel.open {
+            transform: translateX(0);
+        }
+        
+        /* Enhanced textarea */
+        .enhanced-textarea {
+            min-height: 44px;
+            max-height: 200px;
+            resize: none;
+            border: none;
+            outline: none;
+            background: transparent;
+            line-height: 1.5;
+            padding: 0.75rem;
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+        
+        .enhanced-textarea::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            .chat-header {
+                padding: 0 1rem !important;
+            }
+            
+            .chat-footer {
+                padding: 1rem !important;
+            }
+            
+            #chat-container {
+                padding: 1rem !important;
+            }
+            
+            .artifact-container {
+                padding: 1rem;
+                margin: 0.75rem 0;
+            }
+            
+            .artifact-content pre {
+                padding: 0.75rem !important;
+            }
+            
+            .artifact-content pre code {
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* Performance optimizations */
+        .will-change-transform {
+            will-change: transform;
+        }
+        
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        
+        /* Loading skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, var(--border) 25%, var(--bg-secondary) 50%, var(--border) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="light-mode">
+
+    <div class="app-container">
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 hidden" onclick="toggleSidebar(false)"></div>
+
+        <aside id="sidebar" class="flex flex-col">
+            <div class="p-4 md:p-6 flex flex-col h-full">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-[var(--accent)] rounded-xl flex items-center justify-center shadow-lg">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-[var(--bg-primary)]"></i>
+                        </div>
+                        <div>
+                            <span class="font-black text-xs uppercase tracking-tighter">Risika AI</span>
+                            <div class="flex items-center mt-0.5">
+                                <span class="status-indicator status-online"></span>
+                                <span class="text-[8px] font-bold text-emerald-500 uppercase tracking-widest" id="connection-status">Online</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="toggleModelSelector()" class="tooltip p-2 hover:bg-[var(--bg-primary)] rounded-lg" id="model-btn">
+                            <i data-lucide="cpu" class="w-4 h-4"></i>
+                            <span class="tooltip-text">Switch Model</span>
+                        </button>
+                        <button onclick="showSettings()" class="tooltip p-2 hover:bg-[var(--bg-primary)] rounded-lg lg:hidden">
+                            <i data-lucide="settings" class="w-4 h-4"></i>
+                            <span class="tooltip-text">Settings</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="model-selector" class="hidden mb-4 p-3 bg-[var(--bg-primary)] rounded-xl border border-[var(--border)] space-y-2">
+                    <div class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">AI Model</div>
+                    <button onclick="selectModel('gemini')" class="model-option w-full text-left p-2 rounded-lg hover:bg-[var(--bg-secondary)] text-[10px] font-bold flex items-center justify-between" data-model="gemini">
+                        <span class="flex items-center gap-2">
+                            <i data-lucide="brain" class="w-3 h-3"></i>
+                            Gemini 1.5 Flash
+                        </span>
+                        <i data-lucide="check" class="w-3 h-3 hidden"></i>
+                    </button>
+                    <button onclick="selectModel('groq')" class="model-option w-full text-left p-2 rounded-lg hover:bg-[var(--bg-secondary)] text-[10px] font-bold flex items-center justify-between" data-model="groq">
+                        <span class="flex items-center gap-2">
+                            <i data-lucide="zap" class="w-3 h-3"></i>
+                            Llama 3.3 70B
+                        </span>
+                        <i data-lucide="check" class="w-3 h-3 hidden"></i>
+                    </button>
+                    <button onclick="selectModel('openrouter')" class="model-option w-full text-left p-2 rounded-lg hover:bg-[var(--bg-secondary)] text-[10px] font-bold flex items-center justify-between" data-model="openrouter">
+                        <span class="flex items-center gap-2">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                            OpenRouter
+                        </span>
+                        <i data-lucide="check" class="w-3 h-3 hidden"></i>
+                    </button>
+                </div>
+
+                <button onclick="newConversation()" class="mb-4 w-full flex items-center justify-between p-3 md:p-4 rounded-2xl bg-[var(--accent)] text-[var(--bg-primary)] shadow-xl hover:opacity-90 transition-all active:scale-95">
+                    <span class="text-[10px] font-black uppercase tracking-widest">New Session</span>
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                </button>
+
+                <div class="flex-1 overflow-y-auto pr-2 space-y-1 min-h-0">
+                    <div class="flex items-center justify-between px-2 mb-4">
+                        <p class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">History</p>
+                        <div class="flex gap-2">
+                            <button onclick="exportHistory()" class="tooltip text-[8px] font-bold text-emerald-500 uppercase hover:text-emerald-600 transition-colors">
+                                <i data-lucide="download" class="w-3 h-3"></i>
+                                <span class="tooltip-text">Export All</span>
+                            </button>
+                            <button onclick="clearAllHistory()" class="tooltip text-[8px] font-bold text-red-400 uppercase hover:text-red-600 transition-colors">
+                                <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                <span class="tooltip-text">Clear All</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="session-list" class="space-y-1"></div>
+                </div>
+
+                <div class="mt-auto pt-4 border-t border-[var(--border)]">
+                    <div class="flex items-center justify-between p-2 bg-[var(--bg-primary)] rounded-2xl border border-[var(--border)] mb-4">
+                        <button onclick="setTheme('light')" class="flex-1 py-2 flex justify-center rounded-xl tooltip" id="light-btn">
+                            <i data-lucide="sun" class="w-4 h-4"></i>
+                            <span class="tooltip-text">Light Mode</span>
+                        </button>
+                        <button onclick="setTheme('dark')" class="flex-1 py-2 flex justify-center rounded-xl tooltip" id="dark-btn">
+                            <i data-lucide="moon" class="w-4 h-4"></i>
+                            <span class="tooltip-text">Dark Mode</span>
+                        </button>
+                        <button onclick="toggleVoiceInput()" class="flex-1 py-2 flex justify-center rounded-xl tooltip" id="voice-btn">
+                            <i data-lucide="mic" class="w-4 h-4"></i>
+                            <span class="tooltip-text">Voice Input</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border)]">
+                        <div id="u-avatar" class="w-10 h-10 rounded-xl bg-[var(--accent)] flex items-center justify-center text-[var(--bg-primary)] font-bold text-xs uppercase"></div>
+                        <div class="flex-1 truncate">
+                            <p id="u-name" class="text-[10px] font-black uppercase truncate"></p>
+                            <span class="text-[8px] font-bold text-emerald-500 uppercase tracking-widest">Verified User</span>
+                        </div>
+                        <button onclick="showSettings()" class="tooltip p-2 hover:bg-[var(--bg-secondary)] rounded-lg hidden lg:block">
+                            <i data-lucide="settings" class="w-4 h-4"></i>
+                            <span class="tooltip-text">Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="progress-bar" id="progress-bar"></div>
+            <header class="h-16 flex items-center justify-between px-4 md:px-6 border-b border-[var(--border)] bg-[var(--bg-primary)] z-30 shrink-0">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleSidebar(true)" class="lg:hidden p-2 hover:bg-[var(--bg-secondary)] rounded-lg">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <div class="max-w-xs">
+                        <h1 class="text-[10px] font-black uppercase tracking-[0.2em] truncate">Sisco-Link Protocol</h1>
+                        <p id="active-protocol" class="text-[8px] font-bold text-emerald-500 uppercase mt-0.5 truncate">Live Connection Active</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[8px] font-bold text-[var(--text-muted)] uppercase hidden md:inline" id="token-count">Tokens: 0</span>
+                    <button onclick="copyConversation()" class="tooltip p-2 hover:bg-[var(--bg-secondary)] rounded-lg">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                        <span class="tooltip-text">Copy Chat</span>
+                    </button>
+                    <button onclick="toggleFullscreen()" class="tooltip p-2 hover:bg-[var(--bg-secondary)] rounded-lg hidden md:block">
+                        <i data-lucide="maximize" class="w-4 h-4"></i>
+                        <span class="tooltip-text">Fullscreen</span>
+                    </button>
+                </div>
+            </header>
+
+            <div id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 will-change-transform backface-hidden"></div>
+
+            <footer class="p-4 md:p-6 border-t border-[var(--border)] bg-[var(--bg-primary)] shrink-0">
+                <div class="max-w-3xl mx-auto w-full">
+                    <div id="voice-indicator" class="hidden mb-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-2xl animate-in fade-in slide-in-from-bottom-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center animate-pulse">
+                                    <i data-lucide="mic" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] font-black uppercase text-purple-700 dark:text-purple-300">Voice Input Active</p>
+                                    <p class="text-[9px] font-medium text-purple-600 dark:text-purple-400">Speak now - I'm listening</p>
+                                </div>
+                            </div>
+                            <button onclick="stopVoiceRecording()" class="p-2 hover:bg-purple-100 dark:hover:bg-purple-800 rounded-lg">
+                                <i data-lucide="square" class="w-4 h-4 text-purple-600 dark:text-purple-400"></i>
+                            </button>
+                        </div>
+                        <div class="mt-3">
+                            <p id="voice-preview" class="text-sm font-medium text-purple-800 dark:text-purple-200 bg-white/50 dark:bg-black/30 p-3 rounded-lg min-h-[44px]"></p>
+                        </div>
+                    </div>
+                    
+                    <div id="file-tray" class="hidden mb-3 animate-in fade-in slide-in-from-bottom-2">
+                        <div class="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                            <i data-lucide="paperclip" class="w-4 h-4"></i>
+                            <span id="file-name" class="text-[11px] font-bold uppercase truncate max-w-[200px]"></span>
+                            <button onclick="clearFile()" class="p-1 hover:text-red-500 transition-colors ml-2"><i data-lucide="x" class="w-3 h-3"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="relative bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl md:rounded-3xl p-2 flex items-end gap-1 shadow-sm focus-within:shadow-md focus-within:border-[var(--accent)] transition-all">
+                        <div class="flex items-center">
+                            <button onclick="document.getElementById('file-upload').click()" class="p-3 md:p-4 text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors tooltip rounded-lg">
+                                <i data-lucide="paperclip" class="w-5 h-5"></i>
+                                <span class="tooltip-text">Attach Image</span>
+                            </button>
+                            <input type="file" id="file-upload" class="hidden" accept="image/*" onchange="handleFileSelect(event)">
+                            <button onclick="toggleQuickActions()" class="p-3 md:p-4 text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors tooltip rounded-lg hidden md:block">
+                                <i data-lucide="zap" class="w-5 h-5"></i>
+                                <span class="tooltip-text">Quick Actions</span>
+                            </button>
+                        </div>
+                        
+                        <textarea id="user-input" rows="1" placeholder="Converse with Risika..." 
+                            class="enhanced-textarea"
+                            onkeydown="handleKeydown(event)"></textarea>
+                        
+                        <button onclick="handleSend()" id="send-btn" 
+                            class="w-12 h-12 flex items-center justify-center rounded-xl md:rounded-2xl bg-[var(--accent)] text-[var(--bg-primary)] shadow-lg hover:scale-105 active:scale-95 transition-all m-1">
+                            <i data-lucide="arrow-up" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="quick-actions" class="hidden mt-3 grid grid-cols-3 gap-2">
+                        <button onclick="insertPrompt('Summarize this: ')" class="quick-action-btn">
+                            <i data-lucide="file-text" class="w-3 h-3"></i>
+                            Summarize
+                        </button>
+                        <button onclick="insertPrompt('Explain this concept: ')" class="quick-action-btn">
+                            <i data-lucide="help-circle" class="w-3 h-3"></i>
+                            Explain
+                        </button>
+                        <button onclick="insertPrompt('Write code for: ')" class="quick-action-btn">
+                            <i data-lucide="code" class="w-3 h-3"></i>
+                            Code
+                        </button>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 z-[100] bg-[var(--bg-primary)] flex items-center justify-center p-6 hidden">
+        <div class="max-w-sm w-full bg-[var(--bg-secondary)] rounded-[2rem] md:rounded-[3rem] p-8 md:p-12 border border-[var(--border)] shadow-2xl text-center">
+            <div class="w-16 h-16 md:w-20 md:h-20 bg-[var(--accent)] rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8 shadow-xl">
+                <i data-lucide="shield-check" class="w-8 h-8 md:w-10 md:h-10 text-[var(--bg-primary)]"></i>
+            </div>
+            <h2 class="text-lg md:text-xl font-black uppercase tracking-widest mb-2">Identify</h2>
+            <input id="user-name-input" type="text" placeholder="YOUR NAME" 
+                class="w-full bg-[var(--bg-primary)] border border-[var(--border)] p-4 md:p-5 rounded-2xl text-center font-bold tracking-widest outline-none focus:ring-2 focus:ring-[var(--accent)] mb-6">
+            <button onclick="login()" class="w-full bg-[var(--accent)] text-[var(--bg-primary)] p-4 md:p-5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:opacity-90 transition-all active:scale-95">Initialize</button>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div id="settings-panel" class="settings-panel">
+        <div class="p-6 h-full flex flex-col">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-lg font-black uppercase tracking-widest">Settings</h2>
+                <button onclick="hideSettings()" class="p-2 hover:bg-[var(--bg-secondary)] rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto space-y-8">
+                <div>
+                    <h3 class="text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-4">Interface</h3>
+                    <div class="space-y-3">
+                        <label class="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] cursor-pointer hover:bg-[var(--bg-primary)] transition-colors">
+                            <div>
+                                <div class="text-[13px] font-bold mb-1">Auto-scroll to new messages</div>
+                                <div class="text-[11px] text-[var(--text-muted)]">Automatically scroll to latest messages</div>
+                            </div>
+                            <input type="checkbox" id="auto-scroll-setting" class="rounded border-[var(--border)] w-5 h-5" checked>
+                        </label>
+                        <label class="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] cursor-pointer hover:bg-[var(--bg-primary)] transition-colors">
+                            <div>
+                                <div class="text-[13px] font-bold mb-1">Show typing indicator</div>
+                                <div class="text-[11px] text-[var(--text-muted)]">Display typing animation during responses</div>
+                            </div>
+                            <input type="checkbox" id="typing-indicator-setting" class="rounded border-[var(--border)] w-5 h-5" checked>
+                        </label>
+                        <label class="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] cursor-pointer hover:bg-[var(--bg-primary)] transition-colors">
+                            <div>
+                                <div class="text-[13px] font-bold mb-1">Auto-clear input after send</div>
+                                <div class="text-[11px] text-[var(--text-muted)]">Clear message box after sending</div>
+                            </div>
+                            <input type="checkbox" id="auto-clear-setting" class="rounded border-[var(--border)] w-5 h-5" checked>
+                        </label>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-4">AI Configuration</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[11px] font-bold uppercase text-[var(--text-muted)] mb-2 block">Default Temperature</label>
+                            <input type="range" id="temperature-setting" min="0" max="1" step="0.1" value="0.7" 
+                                class="w-full h-2 bg-[var(--border)] rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--accent)]">
+                            <div class="flex justify-between text-[11px] text-[var(--text-muted)] mt-2">
+                                <span>Precise (0.0)</span>
+                                <span id="temperature-value">Balanced (0.7)</span>
+                                <span>Creative (1.0)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-4">API Configuration</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-[11px] font-bold uppercase text-[var(--text-muted)] mb-2 block">Gemini API Key</label>
+                            <div class="relative">
+                                <input type="password" id="gemini-key-input" 
+                                    class="w-full bg-[var(--bg-secondary)] border border-[var(--border)] p-3 rounded-xl text-[13px] font-medium pr-10">
+                                <button onclick="togglePassword('gemini-key-input')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--accent)]">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold uppercase text-[var(--text-muted)] mb-2 block">Groq API Key</label>
+                            <div class="relative">
+                                <input type="password" id="groq-key-input" 
+                                    class="w-full bg-[var(--bg-secondary)] border border-[var(--border)] p-3 rounded-xl text-[13px] font-medium pr-10">
+                                <button onclick="togglePassword('groq-key-input')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--accent)]">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button onclick="saveApiKeys()" class="w-full p-4 bg-[var(--accent)] text-[var(--bg-primary)] rounded-xl text-[12px] font-black uppercase tracking-widest hover:opacity-90 transition-all active:scale-95">
+                            Save API Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pt-6 border-t border-[var(--border)]">
+                <div class="flex items-center justify-between text-[11px] text-[var(--text-muted)]">
+                    <span>Risika AI v2.0</span>
+                    <span>© 2024 Sisco Ask</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="settings-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[999] hidden" onclick="hideSettings()"></div>
+
+    <script>
+        // ULTIMATE CONFIGURATION
+        const CONFIG = {
+            gemini: {
+                key: "AIzaSyB6g5ib2zOSKhBztIBmqQjrJ0F1qTylF2Y",
+                url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+            },
+            groq: {
+                key: "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",
+                url: "https://api.groq.com/openai/v1/chat/completions",
+                model: "llama-3.3-70b-versatile"
+            },
+            openrouter: {
+                key: "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",
+                url: "https://openrouter.ai/api/v1/chat/completions",
+                model: "google/gemini-2.0-flash-exp:free"
+            }
+        };
+
+        const RISIKA_PROMPT = `You are Risika AI, an elite, highly-capable personal assistant architected by Sisco Ask (Sholuade AbdulRazaq Oluwatoyin).
+TONE: Sophisticated, warmer than a typical AI, observant, and naturally helpful. Not robotic.
+SISCO ASK BIO: If asked about your builder or his work, identify him as Sisco Ask. He is a Junior Cyber Security Analyst, Software Developer, and Certified Cloud Practitioner.
+NAME USAGE: Use the user's name naturally, but don't overdo it.
+FORMATTING: Use **bold** for key concepts. Use standard Markdown for lists and tables.
+ARTIFACT FORMATTING: When providing code, essays, lyrics, poems, or any long-form content, format it as an artifact. Start with \`\`\`artifact\n and end with \`\`\`.
+For Python code, use \`\`\`python\n...\`\`\`. For other code, use appropriate language tags.
+IMAGE ANALYSIS: When images are attached, analyze them and provide detailed descriptions.
+Keep responses concise but comprehensive when appropriate.`;
+
+        // ULTIMATE STATE MANAGEMENT
+        let state = {
+            user: JSON.parse(localStorage.getItem('risika_user')) || null,
+            sessions: JSON.parse(localStorage.getItem('risika_sessions')) || [],
+            activeId: localStorage.getItem('risika_active_id') || null,
+            theme: localStorage.getItem('risika_theme') || 'light',
+            currentFileBase64: null,
+            currentFileName: null,
+            isAutoScrolling: true,
+            selectedModel: localStorage.getItem('risika_selected_model') || 'gemini',
+            voiceRecording: false,
+            speechRecognition: null,
+            settings: JSON.parse(localStorage.getItem('risika_settings')) || {
+                autoScroll: true,
+                typingIndicator: true,
+                autoClear: true,
+                temperature: 0.7
+            }
+        };
+
+        // ULTIMATE INITIALIZATION
+        function init() {
+            lucide.createIcons();
+            setTheme(state.theme);
+            
+            if (!state.user) {
+                document.getElementById('login-modal').classList.remove('hidden');
+            } else {
+                bootstrap();
+            }
+            
+            // Initialize settings
+            initializeSettings();
+            
+            // Auto-scroll logic
+            const container = document.getElementById('chat-container');
+            container.addEventListener('scroll', debounce(() => {
+                const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+                state.isAutoScrolling = isAtBottom && state.settings.autoScroll;
+            }, 100));
+            
+            // Initialize Prism
+            if (typeof Prism !== 'undefined') {
+                Prism.highlightAll();
+            }
+            
+            // Check connection status
+            checkConnectionStatus();
+            setInterval(checkConnectionStatus, 30000);
+            
+            // Textarea auto-resize
+            setupTextarea();
+            
+            // Keyboard shortcuts
+            setupKeyboardShortcuts();
+        }
+
+        function bootstrap() {
+            document.getElementById('u-name').innerText = state.user.name;
+            document.getElementById('u-avatar').innerText = state.user.name[0].toUpperCase();
+            
+            if (!state.activeId || !state.sessions.find(s => s.id === state.activeId)) {
+                newConversation();
+            } else {
+                renderMessages();
+                renderSessionList();
+                updateTokenCount();
+            }
+            
+            selectModel(state.selectedModel);
+        }
+
+        // FIXED: Image reading with proper Gemini format
+        async function callGemini(messages, fileData, signal) {
+            try {
+                // Create conversation history
+                const recentMessages = messages.slice(-8); // Keep context manageable
+                
+                // Build contents array with system instruction
+                const contents = [
+                    {
+                        role: "user",
+                        parts: [{ text: RISIKA_PROMPT }]
+                    },
+                    {
+                        role: "model",
+                        parts: [{ text: "Understood. I am Risika AI, ready to assist." }]
+                    }
+                ];
+
+                // Add conversation history
+                recentMessages.forEach(msg => {
+                    const role = msg.role === 'bot' ? 'model' : 'user';
+                    const parts = [{ text: msg.content }];
+                    
+                    // If this message has an image and it's from user
+                    if (role === 'user' && msg.fileData) {
+                        parts.push({
+                            inlineData: {
+                                mimeType: "image/jpeg",
+                                data: msg.fileData.split(',')[1]
+                            }
+                        });
+                    }
+                    
+                    contents.push({ role, parts });
+                });
+
+                const response = await fetch(`${CONFIG.gemini.url}?key=${CONFIG.gemini.key}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: contents,
+                        generationConfig: {
+                            temperature: state.settings.temperature,
+                            maxOutputTokens: 2048,
+                            topP: 0.8,
+                            topK: 40
+                        }
+                    }),
+                    signal
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(`Gemini API error: ${response.status} - ${JSON.stringify(error)}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    throw new Error('Invalid response structure from Gemini');
+                }
+                
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error('Gemini call failed:', error);
+                throw error;
+            }
+        }
+
+        async function callGroq(messages, fileData, signal) {
+            const recentMessages = messages.slice(-8);
+            
+            const response = await fetch(CONFIG.groq.url, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${CONFIG.groq.key}`, 
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({
+                    model: CONFIG.groq.model,
+                    messages: [
+                        { role: "system", content: RISIKA_PROMPT },
+                        ...recentMessages.map(m => ({
+                            role: m.role === 'bot' ? 'assistant' : 'user',
+                            content: m.content + (m.fileData ? "\n[Image attached]" : "")
+                        }))
+                    ],
+                    temperature: state.settings.temperature,
+                    max_tokens: 2048
+                }),
+                signal
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Groq API error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        async function callOpenRouter(messages, fileData, signal) {
+            const recentMessages = messages.slice(-8);
+            
+            const response = await fetch(CONFIG.openrouter.url, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${CONFIG.openrouter.key}`, 
+                    'Content-Type': 'application/json',
+                    'HTTP-Referer': window.location.origin,
+                    'X-Title': 'Risika AI'
+                },
+                body: JSON.stringify({
+                    model: CONFIG.openrouter.model,
+                    messages: [
+                        { role: "system", content: RISIKA_PROMPT },
+                        ...recentMessages.map(m => ({
+                            role: m.role === 'bot' ? 'assistant' : 'user',
+                            content: m.content + (m.fileData ? "\n[Image attached]" : "")
+                        }))
+                    ],
+                    temperature: state.settings.temperature,
+                    max_tokens: 2048
+                }),
+                signal
+            });
+            
+            if (!response.ok) {
+                throw new Error(`OpenRouter API error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        // ENHANCED: Smart failover with better error handling
+        async function fetchWithFailover(messages, fileData) {
+            updateStatus('Establishing neural link...');
+            showProgressBar();
+            
+            const providers = [
+                { 
+                    id: state.selectedModel, 
+                    method: state.selectedModel === 'gemini' ? callGemini : 
+                           state.selectedModel === 'groq' ? callGroq : callOpenRouter,
+                    timeout: fileData ? 60000 : 45000 // Longer timeout for images
+                },
+                { id: 'gemini', method: callGemini, timeout: 30000 },
+                { id: 'groq', method: callGroq, timeout: 25000 },
+                { id: 'openrouter', method: callOpenRouter, timeout: 25000 }
+            ];
+
+            let lastError = null;
+            
+            for (const provider of providers) {
+                try {
+                    updateStatus(`Routing to ${provider.id.toUpperCase()}...`);
+                    updateConnectionStatus('warning', 'Connecting...');
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => {
+                        controller.abort();
+                        console.warn(`${provider.id} timed out`);
+                    }, provider.timeout);
+                    
+                    const result = await provider.method(messages, fileData, controller.signal);
+                    
+                    clearTimeout(timeoutId);
+                    updateStatus('Secure link established');
+                    updateConnectionStatus('online', 'Online');
+                    hideProgressBar();
+                    
+                    return result;
+                } catch (error) {
+                    lastError = error;
+                    console.warn(`${provider.id} failed:`, error.message);
+                    if (provider === providers[0]) {
+                        updateStatus(`Switching to backup node...`);
+                    }
+                    continue;
+                }
+            }
+            
+            hideProgressBar();
+            updateConnectionStatus('error', 'Offline');
+            throw lastError || new Error('All API endpoints failed');
+        }
+
+        // ENHANCED: Connection status with detailed monitoring
+        function checkConnectionStatus() {
+            const startTime = Date.now();
+            fetch('https://www.google.com/favicon.ico?t=' + Date.now(), { 
+                mode: 'no-cors',
+                cache: 'no-store'
+            })
+                .then(() => {
+                    const latency = Date.now() - startTime;
+                    let status = 'online';
+                    let text = `Online ${latency}ms`;
+                    
+                    if (latency > 1000) {
+                        status = 'warning';
+                        text = `Slow ${latency}ms`;
+                    }
+                    
+                    updateConnectionStatus(status, text);
+                })
+                .catch(() => {
+                    updateConnectionStatus('error', 'Offline');
+                });
+        }
+
+        function updateConnectionStatus(type, text) {
+            const statusEl = document.getElementById('connection-status');
+            const indicator = document.querySelector('.status-indicator');
+            
+            if (indicator) {
+                indicator.className = `status-indicator status-${type}`;
+            }
+            if (statusEl) {
+                statusEl.textContent = text;
+                statusEl.className = `text-[8px] font-bold uppercase tracking-widest ${
+                    type === 'online' ? 'text-emerald-500' :
+                    type === 'warning' ? 'text-yellow-500' :
+                    'text-red-500'
+                }`;
+            }
+        }
+
+        function showProgressBar() {
+            const bar = document.getElementById('progress-bar');
+            bar.style.width = '40%';
+            setTimeout(() => bar.style.width = '80%', 500);
+            setTimeout(() => bar.style.width = '95%', 1000);
+        }
+
+        function hideProgressBar() {
+            const bar = document.getElementById('progress-bar');
+            bar.style.width = '100%';
+            setTimeout(() => {
+                bar.style.width = '0%';
+                bar.style.transition = 'width 0.3s ease';
+            }, 300);
+        }
+
+        // ENHANCED: Model selection with visual feedback
+        function toggleModelSelector() {
+            const selector = document.getElementById('model-selector');
+            selector.classList.toggle('hidden');
+            
+            // Close other open selectors
+            document.getElementById('quick-actions').classList.add('hidden');
+        }
+
+        function selectModel(model) {
+            state.selectedModel = model;
+            localStorage.setItem('risika_selected_model', model);
+            
+            // Update UI
+            document.querySelectorAll('.model-option').forEach(option => {
+                const icon = option.querySelector('i[data-lucide="check"]');
+                if (option.dataset.model === model) {
+                    icon.classList.remove('hidden');
+                    option.classList.add('bg-[var(--accent)]', 'text-[var(--bg-primary)]');
+                } else {
+                    icon.classList.add('hidden');
+                    option.classList.remove('bg-[var(--accent)]', 'text-[var(--bg-primary)]');
+                }
+            });
+            
+            updateStatus(`Model switched: ${model.toUpperCase()}`);
+            toggleModelSelector();
+        }
+
+        // FEATURE: Voice input with Web Speech API
+        async function toggleVoiceInput() {
+            if (state.voiceRecording) {
+                stopVoiceRecording();
+                return;
+            }
+            
+            if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+                alert('Voice input requires Chrome or Edge browser. Please type your message instead.');
+                return;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            state.speechRecognition = new SpeechRecognition();
+            
+            state.speechRecognition.continuous = false;
+            state.speechRecognition.interimResults = true;
+            state.speechRecognition.lang = 'en-US';
+            
+            const voiceIndicator = document.getElementById('voice-indicator');
+            const voiceBtn = document.getElementById('voice-btn');
+            
+            voiceIndicator.classList.remove('hidden');
+            state.voiceRecording = true;
+            voiceBtn.classList.add('bg-purple-500', 'text-white');
+            
+            state.speechRecognition.onstart = () => {
+                updateStatus('Voice input active');
+            };
+            
+            state.speechRecognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        transcript += event.results[i][0].transcript;
+                    } else {
+                        transcript += event.results[i][0].transcript;
+                    }
+                }
+                document.getElementById('voice-preview').textContent = transcript;
+            };
+            
+            state.speechRecognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                stopVoiceRecording();
+                
+                if (event.error === 'no-speech') {
+                    updateStatus('No speech detected');
+                } else if (event.error === 'audio-capture') {
+                    alert('Microphone not found. Please check your microphone settings.');
+                }
+            };
+            
+            state.speechRecognition.onend = () => {
+                stopVoiceRecording();
+                
+                const finalText = document.getElementById('voice-preview').textContent.trim();
+                if (finalText) {
+                    document.getElementById('user-input').value = finalText;
+                    autoResizeTextarea();
+                    updateStatus('Voice input complete');
+                }
+            };
+            
+            try {
+                state.speechRecognition.start();
+            } catch (error) {
+                console.error('Failed to start speech recognition:', error);
+                stopVoiceRecording();
+                alert('Failed to start voice input. Please check microphone permissions.');
+            }
+        }
+
+        function stopVoiceRecording() {
+            if (state.speechRecognition) {
+                try {
+                    state.speechRecognition.stop();
+                } catch (e) {}
+                state.speechRecognition = null;
+            }
+            
+            state.voiceRecording = false;
+            document.getElementById('voice-indicator').classList.add('hidden');
+            document.getElementById('voice-btn').classList.remove('bg-purple-500', 'text-white');
+        }
+
+        // FEATURE: Quick actions
+        function toggleQuickActions() {
+            const actions = document.getElementById('quick-actions');
+            actions.classList.toggle('hidden');
+            
+            // Close other open selectors
+            document.getElementById('model-selector').classList.add('hidden');
+        }
+
+        function insertPrompt(prompt) {
+            const input = document.getElementById('user-input');
+            input.value = prompt;
+            input.focus();
+            autoResizeTextarea();
+            toggleQuickActions();
+        }
+
+        // FEATURE: Export history
+        function exportHistory() {
+            const dataStr = JSON.stringify({
+                version: '2.0',
+                exportedAt: new Date().toISOString(),
+                user: state.user,
+                sessions: state.sessions
+            }, null, 2);
+            
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `risika-ai-export-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            updateStatus('History exported successfully');
+        }
+
+        // FEATURE: Copy conversation
+        function copyConversation() {
+            const session = state.sessions.find(s => s.id === state.activeId);
+            if (!session) return;
+            
+            const text = session.messages.map(m => 
+                `${m.role === 'bot' ? '🤖 Risika AI' : '👤 ' + state.user.name}: ${m.content.replace(/\*\*/g, '').replace(/`/g, '')}`
+            ).join('\n\n---\n\n');
+            
+            navigator.clipboard.writeText(text).then(() => {
+                updateStatus('Chat copied to clipboard');
+                
+                // Visual feedback
+                const btn = document.querySelector('[onclick="copyConversation()"]');
+                const originalIcon = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-emerald-500"></i>';
+                setTimeout(() => {
+                    btn.innerHTML = originalIcon;
+                    lucide.createIcons();
+                }, 2000);
+            });
+        }
+
+        // FEATURE: Fullscreen toggle
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(console.error);
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // FEATURE: Settings panel
+        function showSettings() {
+            document.getElementById('settings-panel').classList.add('open');
+            document.getElementById('settings-overlay').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideSettings() {
+            document.getElementById('settings-panel').classList.remove('open');
+            document.getElementById('settings-overlay').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function initializeSettings() {
+            // Load settings
+            document.getElementById('auto-scroll-setting').checked = state.settings.autoScroll;
+            document.getElementById('typing-indicator-setting').checked = state.settings.typingIndicator;
+            document.getElementById('auto-clear-setting').checked = state.settings.autoClear;
+            document.getElementById('temperature-setting').value = state.settings.temperature;
+            updateTemperatureValue(state.settings.temperature);
+            
+            // Load API keys (masked)
+            document.getElementById('gemini-key-input').value = CONFIG.gemini.key ? '•'.repeat(20) : '';
+            document.getElementById('groq-key-input').value = CONFIG.groq.key ? '•'.repeat(20) : '';
+            
+            // Event listeners
+            document.getElementById('auto-scroll-setting').addEventListener('change', (e) => {
+                state.settings.autoScroll = e.target.checked;
+                saveSettings();
+            });
+            
+            document.getElementById('typing-indicator-setting').addEventListener('change', (e) => {
+                state.settings.typingIndicator = e.target.checked;
+                saveSettings();
+            });
+            
+            document.getElementById('auto-clear-setting').addEventListener('change', (e) => {
+                state.settings.autoClear = e.target.checked;
+                saveSettings();
+            });
+            
+            document.getElementById('temperature-setting').addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                updateTemperatureValue(value);
+                state.settings.temperature = value;
+                saveSettings();
+            });
+        }
+
+        function updateTemperatureValue(value) {
+            const label = document.getElementById('temperature-value');
+            let text = '';
+            if (value <= 0.3) text = 'Precise';
+            else if (value <= 0.7) text = 'Balanced';
+            else text = 'Creative';
+            label.textContent = `${text} (${value.toFixed(1)})`;
+        }
+
+        function saveApiKeys() {
+            const geminiKey = document.getElementById('gemini-key-input').value;
+            const groqKey = document.getElementById('groq-key-input').value;
+            
+            // Only update if not masked
+            if (!geminiKey.includes('•')) CONFIG.gemini.key = geminiKey;
+            if (!groqKey.includes('•')) CONFIG.groq.key = groqKey;
+            
+            updateStatus('API settings saved');
+            hideSettings();
+        }
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.nextElementSibling;
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                input.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+
+        function saveSettings() {
+            localStorage.setItem('risika_settings', JSON.stringify(state.settings));
+        }
+
+        // FEATURE: Token counter
+        function updateTokenCount() {
+            const session = state.sessions.find(s => s.id === state.activeId);
+            if (!session) return;
+            
+            const totalTokens = session.messages.reduce((acc, msg) => 
+                acc + Math.ceil(msg.content.length / 4), 0
+            );
+            
+            document.getElementById('token-count').textContent = `Tokens: ${totalTokens.toLocaleString()}`;
+        }
+
+        // ULTIMATE: Enhanced send function with all features
+        async function handleSend() {
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            if (!text && !state.currentFileBase64) return;
+
+            const session = state.sessions.find(s => s.id === state.activeId);
+            if (session.messages.length === 1 && text) {
+                session.title = text.slice(0, 40) + (text.length > 40 ? '...' : '');
+            }
+
+            session.messages.push({ 
+                role: 'user', 
+                content: text, 
+                fileName: state.currentFileName, 
+                fileData: state.currentFileBase64,
+                timestamp: Date.now()
+            });
+            
+            const tempFile = state.currentFileBase64;
+            
+            if (state.settings.autoClear) {
+                input.value = "";
+                autoResizeTextarea();
+            }
+            clearFile();
+            save();
+            renderMessages();
+            
+            state.isAutoScrolling = state.settings.autoScroll;
+            if (state.settings.autoScroll) scrollToBottom();
+            
+            if (state.settings.typingIndicator) showLoading(true);
+            
+            try {
+                const reply = await fetchWithFailover(session.messages, tempFile);
+                session.messages.push({ 
+                    role: 'bot', 
+                    content: reply,
+                    timestamp: Date.now()
+                });
+                save();
+                renderMessages();
+                if (state.settings.autoScroll) scrollToBottom();
+                updateTokenCount();
+            } catch (err) {
+                console.error('API error:', err);
+                session.messages.push({ 
+                    role: 'bot', 
+                    content: `**Connection Interruption**\n\nI encountered an issue while processing your request.\n\n**Possible causes:**\n• API rate limit reached\n• Network connectivity issue\n• Service temporarily unavailable\n\n**Suggested actions:**\n1. Check your internet connection\n2. Try a different AI model (click the CPU icon)\n3. Wait 30 seconds and try again\n4. Verify your API keys in Settings\n\n*Current model: ${state.selectedModel.toUpperCase()}*`,
+                    timestamp: Date.now()
+                });
+                save();
+                renderMessages();
+                if (state.settings.autoScroll) scrollToBottom();
+            } finally {
+                showLoading(false);
+                updateStatus('Secure channel active');
+                updateConnectionStatus('online', 'Online');
+            }
+        }
+
+        // FIXED: Enhanced markdown parsing with responsive artifacts
+        function parseMarkdown(text) {
+            if (!text) return '';
+            
+            // Handle artifact blocks
+            const artifactMatch = text.match(/```artifact\n([\s\S]*?)\n```/);
+            if (artifactMatch) {
+                const artifactContent = artifactMatch[1];
+                const otherContent = text.replace(/```artifact\n[\s\S]*?\n```/, '');
+                return parseRegularMarkdown(otherContent) + createArtifact(artifactContent);
+            }
+            
+            // Handle code blocks
+            const codeBlockMatch = text.match(/```(\w+)?\n([\s\S]*?)\n```/g);
+            if (codeBlockMatch) {
+                let result = text;
+                codeBlockMatch.forEach(block => {
+                    const langMatch = block.match(/```(\w+)?\n([\s\S]*?)\n```/);
+                    const lang = langMatch[1] || 'text';
+                    const code = langMatch[2];
+                    const highlightedCode = typeof Prism !== 'undefined' 
+                        ? Prism.highlight(code, Prism.languages[lang] || Prism.languages.text, lang)
+                        : escapeHtml(code);
+                    result = result.replace(block, createCodeArtifact(lang, code, highlightedCode));
+                });
+                return parseRegularMarkdown(result);
+            }
+            
+            return parseRegularMarkdown(text);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // FIXED: Create responsive artifact
+        function createArtifact(content) {
+            const codeMatch = content.match(/^```(\w+)\n([\s\S]*?)\n```$/);
+            if (codeMatch) {
+                const lang = codeMatch[1];
+                const code = codeMatch[2];
+                const highlightedCode = typeof Prism !== 'undefined' 
+                    ? Prism.highlight(code, Prism.languages[lang] || Prism.languages.text, lang)
+                    : escapeHtml(code);
+                return createCodeArtifact(lang, code, highlightedCode);
+            }
+            
+            return `
+                <div class="artifact-container">
+                    <div class="artifact-header">
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                            <i data-lucide="file-text" class="w-4 h-4 flex-shrink-0"></i>
+                            <span class="artifact-title truncate">ARTIFACT</span>
+                        </div>
+                        <button onclick="copyToClipboard(this, \`${encodeURIComponent(content)}\`)" class="copy-btn">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                            Copy
+                        </button>
+                    </div>
+                    <div class="artifact-content">
+                        ${parseRegularMarkdown(content)}
+                    </div>
+                </div>
+            `;
+        }
+
+        // FIXED: Create responsive code artifact
+        function createCodeArtifact(lang, code, highlightedCode) {
+            return `
+                <div class="artifact-container">
+                    <div class="artifact-header">
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                            <i data-lucide="code" class="w-4 h-4 flex-shrink-0"></i>
+                            <span class="artifact-title truncate">${lang.toUpperCase()} CODE</span>
+                        </div>
+                        <button onclick="copyToClipboard(this, \`${encodeURIComponent(code)}\`)" class="copy-btn">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                            Copy
+                        </button>
+                    </div>
+                    <div class="artifact-content">
+                        <pre><code class="language-${lang}">${highlightedCode}</code></pre>
+                    </div>
+                </div>
+            `;
+        }
+
+        // FIXED: Copy to clipboard with visual feedback
+        function copyToClipboard(button, encodedText) {
+            const text = decodeURIComponent(encodedText);
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHTML = button.innerHTML;
+                const originalClass = button.className;
+                
+                button.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> Copied!';
+                button.className = originalClass + ' success';
+                button.disabled = true;
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.className = originalClass;
+                    button.disabled = false;
+                    lucide.createIcons();
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                button.innerHTML = '<i data-lucide="x" class="w-3 h-3"></i> Failed';
+                setTimeout(() => {
+                    button.innerHTML = '<i data-lucide="copy" class="w-3 h-3"></i> Copy';
+                    lucide.createIcons();
+                }, 2000);
+            });
+        }
+
+        function parseRegularMarkdown(text) {
+            let html = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+            
+            // Handle lists
+            html = html.replace(/^\s*[-*] (.*$)/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+            html = html.replace(/<\/ul>\s*<ul>/g, '');
+            html = html.replace(/<p><ul>/g, '<ul>');
+            html = html.replace(/<\/ul><\/p>/g, '</ul>');
+            
+            return html;
+        }
+
+        // FIXED: Enhanced render messages with performance optimizations
+        function renderMessages() {
+            const container = document.getElementById('chat-container');
+            const session = state.sessions.find(s => s.id === state.activeId);
+            if (!session) return;
+
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
+            
+            session.messages.forEach((m, index) => {
+                const isBot = m.role === 'bot';
+                const div = document.createElement('div');
+                div.className = `flex w-full animate-in fade-in slide-in-from-bottom-2 duration-300 ${index === session.messages.length - 1 ? 'message-enter' : ''}`;
+                
+                div.innerHTML = `
+                    <div class="msg-wrapper ${!isBot ? 'flex-row-reverse' : ''}">
+                        <div class="avatar ${isBot ? 'bg-[var(--accent)] text-[var(--bg-primary)] shadow-lg' : 'bg-[var(--bg-secondary)] border border-[var(--border)]'}">
+                            ${isBot ? '<i data-lucide="shield-check" class="w-5 h-5"></i>' : state.user.name[0].toUpperCase()}
+                        </div>
+                        <div class="flex-1 min-w-0 ${!isBot ? 'text-right' : ''}">
+                            <p class="text-[8px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mb-1.5">${isBot ? 'Risika Core' : state.user.name}</p>
+                            <div class="markdown-content inline-block text-left ${!isBot ? 'bg-[var(--msg-user)] p-4 md:p-5 rounded-2xl md:rounded-3xl rounded-tr-none border border-[var(--border)]' : ''}">
+                                ${m.fileData ? `
+                                    <div class="mb-3">
+                                        <div class="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mb-2 flex items-center gap-1">
+                                            <i data-lucide="image" class="w-3 h-3"></i> Attached Image
+                                        </div>
+                                        <img src="${m.fileData}" class="image-preview max-w-full md:max-w-[300px]" alt="Uploaded image">
+                                    </div>
+                                ` : ''}
+                                ${parseMarkdown(m.content)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                fragment.appendChild(div);
+            });
+            
+            container.innerHTML = '';
+            container.appendChild(fragment);
+            
+            lucide.createIcons();
+            
+            // Highlight code blocks
+            if (typeof Prism !== 'undefined') {
+                setTimeout(() => Prism.highlightAll(), 50);
+            }
+        }
+
+        function showLoading(v) {
+            const id = 'loader';
+            let el = document.getElementById(id);
+            
+            if (v && !el) {
+                const div = document.createElement('div');
+                div.id = id;
+                div.className = 'msg-wrapper animate-pulse';
+                div.innerHTML = `
+                    <div class="avatar bg-[var(--accent)] text-[var(--bg-primary)]"><i data-lucide="cpu" class="w-5 h-5"></i></div>
+                    <div class="flex items-center gap-3 px-4 pt-4">
+                        <div class="flex gap-1">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                        <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase">Processing</span>
+                    </div>
+                `;
+                document.getElementById('chat-container').appendChild(div);
+                lucide.createIcons();
+                scrollToBottom();
+            } else if (!v && el) {
+                el.remove();
+            }
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chat-container');
+            requestAnimationFrame(() => {
+                container.scrollTo({
+                    top: container.scrollHeight,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
+        // FIXED: Textarea handling
+        function setupTextarea() {
+            const textarea = document.getElementById('user-input');
+            textarea.addEventListener('input', autoResizeTextarea);
+            textarea.addEventListener('focus', () => {
+                textarea.parentElement.classList.add('shadow-md', 'border-[var(--accent)]');
+            });
+            textarea.addEventListener('blur', () => {
+                textarea.parentElement.classList.remove('shadow-md', 'border-[var(--accent)]');
+            });
+        }
+
+        function autoResizeTextarea() {
+            const textarea = document.getElementById('user-input');
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+        }
+
+        function handleKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size must be less than 5MB');
+                return;
+            }
+            
+            state.currentFileName = file.name;
+            const reader = new FileReader();
+            
+            reader.onloadstart = () => {
+                updateStatus('Loading image...');
+            };
+            
+            reader.onload = (ev) => {
+                state.currentFileBase64 = ev.target.result;
+                document.getElementById('file-tray').classList.remove('hidden');
+                document.getElementById('file-name').innerText = file.name;
+                updateStatus('Image ready');
+            };
+            
+            reader.onerror = () => {
+                alert('Failed to load image');
+                state.currentFileBase64 = null;
+                state.currentFileName = null;
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        function clearFile() {
+            state.currentFileBase64 = null;
+            state.currentFileName = null;
+            document.getElementById('file-tray').classList.add('hidden');
+            document.getElementById('file-upload').value = '';
+        }
+
+        // Utility functions
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // Ctrl/Cmd + / to toggle sidebar
+                if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+                    e.preventDefault();
+                    const sidebar = document.getElementById('sidebar');
+                    const isOpen = sidebar.classList.contains('open');
+                    toggleSidebar(!isOpen);
+                }
+                
+                // Ctrl/Cmd + K to focus input
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    document.getElementById('user-input').focus();
+                }
+                
+                // Escape to clear input
+                if (e.key === 'Escape') {
+                    const input = document.getElementById('user-input');
+                    if (document.activeElement === input && input.value.trim()) {
+                        input.value = '';
+                        autoResizeTextarea();
+                    }
+                }
+            });
+        }
+
+        // Keep existing functions from previous version
+        function login() {
+            const name = document.getElementById('user-name-input').value.trim();
+            if (name) {
+                state.user = { name };
+                localStorage.setItem('risika_user', JSON.stringify(state.user));
+                document.getElementById('login-modal').classList.add('hidden');
+                bootstrap();
+            }
+        }
+
+        function setTheme(t) {
+            state.theme = t;
+            document.body.classList.toggle('dark-mode', t === 'dark');
+            localStorage.setItem('risika_theme', t);
+            document.getElementById('light-btn').className = t === 'light' 
+                ? 'flex-1 py-2 flex justify-center rounded-xl bg-[var(--accent)] text-[var(--bg-primary)] shadow-sm' 
+                : 'flex-1 py-2 flex justify-center rounded-xl text-[var(--text-muted)]';
+            document.getElementById('dark-btn').className = t === 'dark' 
+                ? 'flex-1 py-2 flex justify-center rounded-xl bg-[var(--accent)] text-[var(--bg-primary)] shadow-sm' 
+                : 'flex-1 py-2 flex justify-center rounded-xl text-[var(--text-muted)]';
+        }
+
+        function toggleSidebar(show) {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('sidebar-overlay');
+            if (show) { 
+                sb.classList.add('open'); 
+                ov.classList.remove('hidden'); 
+            } else { 
+                sb.classList.remove('open'); 
+                ov.classList.add('hidden'); 
+            }
+        }
+
+        function newConversation() {
+            const id = Date.now().toString();
+            state.sessions.unshift({
+                id,
+                title: "New Interaction",
+                messages: [{ 
+                    role: 'bot', 
+                    content: `Hello, **${state.user.name}**. I am Risika AI, your elite assistant.\n\nI've initialized our secure neural link—how may I assist your workflow today?`,
+                    timestamp: Date.now()
+                }]
+            });
+            state.activeId = id;
+            save();
+            renderMessages();
+            renderSessionList();
+            scrollToBottom();
+            updateStatus('New session created');
+        }
+
+        function clearAllHistory() {
+            if (confirm("Permanently delete ALL conversation history? This cannot be undone.")) {
+                state.sessions = [];
+                newConversation();
+                updateStatus('All history cleared');
+            }
+        }
+
+        function save() {
+            localStorage.setItem('risika_sessions', JSON.stringify(state.sessions));
+            localStorage.setItem('risika_active_id', state.activeId);
+        }
+
+        function renderSessionList() {
+            const list = document.getElementById('session-list');
+            const sessions = state.sessions.slice(0, 20); // Limit to 20 most recent
+            
+            list.innerHTML = sessions.map(s => `
+                <div onclick="switchSession('${s.id}')" 
+                     class="p-3 rounded-xl cursor-pointer transition-all flex items-center justify-between group 
+                            ${s.id === state.activeId ? 'bg-[var(--accent)] text-[var(--bg-primary)]' : 'hover:bg-[var(--bg-primary)] text-[var(--text-muted)]'}">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[10px] font-bold uppercase truncate">${s.title}</p>
+                        <p class="text-[8px] opacity-70 mt-0.5">${formatTime(s.messages[0]?.timestamp)}</p>
+                    </div>
+                    <button onclick="deleteSession(event, '${s.id}')" 
+                            class="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all p-1">
+                        <i data-lucide="trash-2" class="w-3 h-3"></i>
+                    </button>
+                </div>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+            return date.toLocaleDateString();
+        }
+
+        function deleteSession(e, id) {
+            e.stopPropagation();
+            if (confirm('Delete this conversation?')) {
+                state.sessions = state.sessions.filter(s => s.id !== id);
+                if (state.activeId === id) {
+                    state.activeId = state.sessions[0]?.id || null;
+                }
+                save();
+                bootstrap();
+                updateStatus('Session deleted');
+            }
+        }
+
+        function switchSession(id) {
+            state.activeId = id;
+            save();
+            renderMessages();
+            renderSessionList();
+            scrollToBottom();
+            updateStatus('Session loaded');
+            if (window.innerWidth <= 1024) toggleSidebar(false);
+        }
+
+        function updateStatus(text) {
+            const el = document.getElementById('active-protocol');
+            if (el) {
+                el.textContent = text.toUpperCase();
+                el.classList.add('animate-pulse');
+                setTimeout(() => el.classList.remove('animate-pulse'), 1000);
+            }
+        }
+
+        // Initialize
+        window.onload = init;
+        
+        // Export all functions to global scope
+        window.toggleSidebar = toggleSidebar;
+        window.newConversation = newConversation;
+        window.clearAllHistory = clearAllHistory;
+        window.deleteSession = deleteSession;
+        window.switchSession = switchSession;
+        window.setTheme = setTheme;
+        window.login = login;
+        window.handleSend = handleSend;
+        window.handleKeydown = handleKeydown;
+        window.handleFileSelect = handleFileSelect;
+        window.clearFile = clearFile;
+        window.toggleModelSelector = toggleModelSelector;
+        window.selectModel = selectModel;
+        window.toggleVoiceInput = toggleVoiceInput;
+        window.stopVoiceRecording = stopVoiceRecording;
+        window.toggleQuickActions = toggleQuickActions;
+        window.insertPrompt = insertPrompt;
+        window.exportHistory = exportHistory;
+        window.copyConversation = copyConversation;
+        window.toggleFullscreen = toggleFullscreen;
+        window.showSettings = showSettings;
+        window.hideSettings = hideSettings;
+        window.saveApiKeys = saveApiKeys;
+        window.togglePassword = togglePassword;
+        window.copyToClipboard = copyToClipboard;
+    </script>
+</body>
+</html>
