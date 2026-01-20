@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Risika AI | Sisco Ask Edition</title>
+    <link rel="icon" href="risika.png" sizes="32x32">
+    <link rel="icon" href="risika.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="risika.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
@@ -494,6 +497,83 @@
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
+
+        /* ────────────────────────────────────────────────
+   FIX: Mobile safe area + keyboard handling
+───────────────────────────────────────────────── */
+
+/* Use safe-area-inset for bottom navigation bar / home indicator */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    footer {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+    }
+    
+    /* Also protect the quick actions and voice indicator when they appear */
+    #quick-actions,
+    #voice-indicator {
+        margin-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    }
+}
+
+/* Fallback + extra breathing room for Android & older iOS */
+@media (max-width: 1024px) {
+    footer {
+        padding-bottom: 2.5rem !important;     /* safe fallback + extra space */
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Make sure the whole layout can adapt when keyboard opens */
+body {
+    overflow-y: auto !important;           /* was hidden – now allow scroll */
+    height: 100dvh;                        /* use dynamic viewport height instead of 100vh */
+}
+
+.app-container {
+    height: 100dvh;
+    overflow-y: auto;
+}
+
+.main-content {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;     /* smooth scrolling on iOS */
+}
+
+/* Help the input stay visible above keyboard */
+.enhanced-textarea:focus {
+    scroll-margin-bottom: 120px;           /* gives space above keyboard */
+}
+
+/* Visual feedback when input is focused (helps on small screens) */
+.relative:has(.enhanced-textarea:focus) {
+    box-shadow: 0 0 0 3px rgba(var(--accent), 0.2);
+    border-color: var(--accent) !important;
+}
+
+/* Prevent content from being pushed under system bars */
+.chat-header,
+footer {
+    z-index: 40;
+}
+
+/* Optional: Slightly better spacing on tablets */
+@media (min-width: 641px) and (max-width: 1024px) {
+    footer {
+        padding: 1.25rem 1.5rem;
+    }
+    .enhanced-textarea {
+        font-size: 1.05rem;
+    }
+}
+
+footer {
+    padding-bottom: max(2.5rem, calc(1.25rem + env(safe-area-inset-bottom))) !important;
+    min-height: 88px;
+}
+body.keyboard-open footer {
+    box-shadow: 0 -6px 20px rgba(0,0,0,0.15);
+}
     </style>
 </head>
 <body class="light-mode">
@@ -804,7 +884,7 @@
             <div class="pt-6 border-t border-[var(--border)]">
                 <div class="flex items-center justify-between text-[11px] text-[var(--text-muted)]">
                     <span>Risika AI v2.0</span>
-                    <span>© 2024 Sisco Ask</span>
+                    <span>© 2026 Sisco Ask</span>
                 </div>
             </div>
         </div>
@@ -1998,6 +2078,52 @@ Keep responses concise but comprehensive when appropriate.`;
         window.saveApiKeys = saveApiKeys;
         window.togglePassword = togglePassword;
         window.copyToClipboard = copyToClipboard;
+
+        // Force better mobile keyboard behavior
+document.getElementById('user-input').addEventListener('focus', () => {
+    // Small delay so keyboard has time to appear
+    setTimeout(() => {
+        const input = document.getElementById('user-input');
+        input.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'   // tries to center input (best for most phones)
+        });
+    }, 300);
+});
+
+document.getElementById('user-input').addEventListener('focus', () => {
+    setTimeout(() => {
+        const input = document.getElementById('user-input');
+        input.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+        });
+        // iOS loves this tiny trick
+        setTimeout(() => {
+            window.scrollBy(0, 1);
+            setTimeout(() => window.scrollBy(0, -1), 60);
+        }, 420);
+    }, 340);
+});
+
+if ('visualViewport' in window) {
+    window.visualViewport.addEventListener('resize', () => {
+        if (window.visualViewport.height < window.innerHeight * 0.75) {
+            document.body.classList.add('keyboard-open');
+        } else {
+            document.body.classList.remove('keyboard-open');
+            if (state.settings.autoScroll) scrollToBottom();
+        }
+    });
+}
+// Optional: Also scroll to bottom when sending (helps after keyboard closes)
+document.getElementById('user-input').addEventListener('blur', () => {
+    if (state.settings.autoScroll) {
+        setTimeout(scrollToBottom, 100);
+    }
+});
+
     </script>
 </body>
 </html>
